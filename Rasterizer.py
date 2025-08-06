@@ -23,7 +23,7 @@ def vertex_shader_breathing(vertex, time=0, **kwargs):
     x, y, z = vertex
     # Respiración más pronunciada
     breathing_factor = 1 + 0.3 * math.sin(time * 1.2)
-    # Pequeño movimiento verticall
+    # Pequeño movimiento vertical
     bounce = 0.05 * math.sin(time * 2)
     return (x * breathing_factor, y * breathing_factor + bounce, z * breathing_factor)
 
@@ -44,7 +44,6 @@ def vertex_shader_electric(vertex, time=0, **kwargs):
     """Vertex Shader 2: Electric - Temblor eléctrico"""
     x, y, z = vertex
     electric_intensity = 0.05
-    # Ruido eléctrico rápido y caótico
     noise_x = math.sin(time * 20 + x * 30) * electric_intensity
     noise_y = math.cos(time * 25 + y * 35) * electric_intensity
     noise_z = math.sin(time * 18 + z * 28) * electric_intensity * 0.5
@@ -56,7 +55,6 @@ def fragment_shader_electric(color, time=0, position=None, **kwargs):
     
     if position:
         x, y = position
-        # Crear rayos eléctricos más intensos
         lightning1 = abs(math.sin(time * 12 + x * 0.08)) * abs(math.cos(time * 10 + y * 0.06))
         lightning2 = abs(math.sin(time * 15 + x * 0.12 + y * 0.08))
         lightning3 = abs(math.cos(time * 8 + x * 0.05 + y * 0.1))
@@ -64,25 +62,100 @@ def fragment_shader_electric(color, time=0, position=None, **kwargs):
         max_lightning = max(lightning1, lightning2, lightning3)
         
         if max_lightning > 0.9:
-            # Rayos blancos súper brillantes
             return (255, 255, 255)
         elif max_lightning > 0.8:
-            # Rayos amarillo eléctrico
             return (255, 255, 150)
         elif max_lightning > 0.7:
-            # Rayos azul eléctrico
             return (100, 150, 255)
         elif max_lightning > 0.6:
-            # Rayos violeta
             return (200, 100, 255)
-    
-    # Color base con chisporroteo eléctrico
+
     electric_base = int(40 * abs(math.sin(time * 6)))
     return (
         min(255, r + electric_base),
         min(255, g + electric_base),
         min(255, b + electric_base//2)
     )
+
+# SHADER 3: SOAP BUBBLE (BURBUJA)
+
+def vertex_shader_bubble(vertex, time=0, **kwargs):
+    """Vertex Shader 3: Bubble - Pikachu como burbuja flotante"""
+    x, y, z = vertex
+    float_y = 0.1 * math.sin(time * 0.8)
+    bubble_wave = 0.05 * math.sin(time * 3 + x * 5) * math.cos(time * 2 + z * 4)
+    return (x + bubble_wave, y + float_y + bubble_wave * 0.5, z + bubble_wave * 0.3)
+
+def fragment_shader_bubble(color, time=0, position=None, **kwargs):
+    """Fragment Shader 3: Colores iridiscentes como burbuja de jabón"""
+    r, g, b = color
+    
+    if position:
+        x, y = position
+        distance = math.sqrt((x - WIDTH//2)**2 + (y - HEIGHT//2)**2)
+        angle = math.atan2(y - HEIGHT//2, x - WIDTH//2)
+        
+        iridescent_factor = math.sin(time * 2 + distance * 0.02 + angle * 3)
+        
+        if iridescent_factor > 0.5:
+            return (255, int(150 + 50 * math.sin(time)), int(200 + 55 * math.cos(time * 1.5)))
+        elif iridescent_factor > 0:
+            return (int(100 + 80 * math.cos(time)), int(180 + 60 * math.sin(time * 1.2)), 255)
+        elif iridescent_factor > -0.5:
+            return (int(120 + 60 * math.sin(time * 0.8)), 255, int(180 + 50 * math.cos(time)))
+        else:
+            return (255, 255, int(100 + 80 * math.sin(time * 1.8)))
+    
+    pearl_shine = int(30 * abs(math.sin(time * 1.5)))
+    return (min(255, r + pearl_shine), min(255, g + pearl_shine), min(255, b + pearl_shine))
+
+# SHADER 4: HOLOGRAM (HOLOGRAMA FUTURISTA)
+
+def vertex_shader_hologram(vertex, time=0, **kwargs):
+    """Vertex Shader 4: Hologram - Efecto de holograma inestable"""
+    x, y, z = vertex
+    glitch_intensity = 0.02
+    glitch_x = math.sin(time * 25 + y * 40) * glitch_intensity if math.sin(time * 8) > 0.3 else 0
+    glitch_y = math.cos(time * 30 + x * 35) * glitch_intensity if math.cos(time * 12) > 0.4 else 0
+    
+    scanline_offset = 0.01 * math.sin(y * 50 + time * 15)
+    
+    return (x + glitch_x + scanline_offset, y + glitch_y, z)
+
+def fragment_shader_hologram(color, time=0, position=None, **kwargs):
+    """Fragment Shader 4: Efecto de holograma con scanlines y interferencia"""
+    r, g, b = color
+    
+    if position:
+        x, y = position
+        
+        scanline_intensity = math.sin(y * 0.5 + time * 10)
+        if scanline_intensity > 0.8:
+            return (min(255, int(r * 0.3) + 200), min(255, int(g * 0.3) + 250), 255)
+        
+        noise = abs(math.sin(x * 0.3 + time * 20)) * abs(math.cos(y * 0.2 + time * 15))
+        if noise > 0.9:
+            return (0, 255, 255)
+        
+        # Efecto de "transmission loss"
+        transmission = abs(math.sin(time * 3)) * 0.7 + 0.3
+        
+        # Colores holográficos (azul/cyan dominante)
+        holo_r = int((r * 0.2 + 100) * transmission)
+        holo_g = int((g * 0.4 + 150) * transmission)
+        holo_b = int((b * 0.1 + 200) * transmission)
+        
+        return (min(255, holo_r), min(255, holo_g), min(255, holo_b))
+    
+    # Base holográfica
+    base_transmission = abs(math.sin(time * 2)) * 0.5 + 0.5
+    return (
+        int(r * 0.3 * base_transmission + 80),
+        int(g * 0.5 * base_transmission + 120),
+        int(min(255, b * 0.2 * base_transmission + 180))
+    )
+
+# SISTEMA DE SHADERS
 
 SHADERS = [
     {
@@ -94,13 +167,23 @@ SHADERS = [
         "name": "ELECTRIC LIGHTNING",
         "vertex": vertex_shader_electric,
         "fragment": fragment_shader_electric
+    },
+    {
+        "name": "SOAP BUBBLE",
+        "vertex": vertex_shader_bubble,
+        "fragment": fragment_shader_bubble
+    },
+    {
+        "name": "HOLOGRAM",
+        "vertex": vertex_shader_hologram,
+        "fragment": fragment_shader_hologram
     }
 ]
 
 class SimpleRenderer:
     def __init__(self, screen):
         self.screen = screen
-        self.clear_color = (10, 10, 15) 
+        self.clear_color = (10, 10, 15)  # Fondo muy oscuro
         
     def clear(self):
         self.screen.fill(self.clear_color)
@@ -208,6 +291,8 @@ running = True
 print("=== CONTROLES ===")
 print("1: Breathing Pikachu (se infla)")
 print("2: Electric Lightning (rayos)")
+print("3: Soap Bubble (burbuja iridiscente)")
+print("4: Hologram (holograma futurista)")
 print("ESPACIO: Auto-rotación ON/OFF")
 print("← →: Rotación manual")
 print("ESC: Salir")
@@ -218,13 +303,21 @@ while running:
         if event.type == pygame.QUIT:
             running = False
         elif event.type == pygame.KEYDOWN:
+            # Cambiar shaders
             if event.key == pygame.K_1:
                 current_shader = 0
                 print("Shader: BREATHING PIKACHU (se infla)")
             elif event.key == pygame.K_2:
                 current_shader = 1
                 print("Shader: ELECTRIC LIGHTNING (rayos)")
+            elif event.key == pygame.K_3:
+                current_shader = 2
+                print("Shader: SOAP BUBBLE (burbuja iridiscente)")
+            elif event.key == pygame.K_4:
+                current_shader = 3
+                print("Shader: HOLOGRAM (holograma futurista)")
             
+            # Otros controles
             elif event.key == pygame.K_SPACE:
                 auto_rotate = not auto_rotate
                 print(f"Auto-rotación: {'ON' if auto_rotate else 'OFF'}")
